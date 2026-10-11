@@ -1,0 +1,6 @@
+[
+{"char":"tenshu","name":"あっさり清湯カウンター","kw":"あっさり","type":"melee","dmg":10,"color":16769154,"source":{"postId":"2109132966337421450","author":"lukaworld","excerpt":"あっさりしてて、美味しかったですよ"}},
+{"char":"banchou","name":"漬物つぶて","kw":"漬物","type":"projectile","dmg":9,"color":10079283,"source":{"postId":"2109132966337421450","author":"lukaworld","excerpt":"めし無理で漬物もあって！"}},
+{"char":"tuber","name":"激混みかき込みラッシュ","kw":"かき込み","type":"melee","dmg":12,"color":16753920,"source":{"postId":"2109132934691385541","author":"tmtnskuma","excerpt":"必死でラーメンかき込んできた"}},
+{"char":"deshi","name":"埠頭帰りの寄り道麺","kw":"埠頭","type":"splash","dmg":11,"color":7062236,"source":{"postId":"2109132938822701227","author":"kdama19","excerpt":"蘭越でラーメン食べてちょこっと埠頭見て帰るか"}}
+]

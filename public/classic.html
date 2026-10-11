@@ -1,0 +1,14 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ラーメン 三田三郎</title><link rel="stylesheet" href="style.css?v=6"></head><body>
+<div id="bg"><div class="noren"><span>三</span><span>田</span><span>三</span><span>郎</span></div><div class="steam s1"></div><div class="steam s2"></div><div class="bowl">🍜</div></div>
+<section id="title" class="screen glass center"><h1>🍜 ラーメン 三田三郎</h1><p class="sub">極太麺・豚・コール。AIチームと5人のボスを攻略して、のれん分けを目指せ！</p>
+ <div id="bosslist"></div><button id="start" class="big">食券を買う（開店）</button><p class="note">🎤 マイク／⌨ キーボードどちらでも。🔊 ボイス付き</p></section>
+<section id="play" class="screen hidden">
+ <header id="hud" class="glass"><div class="lv">Lv<b id="lv">1</b></div><div id="bname"></div><div class="gaugewrap">説得 <div class="gauge"><i id="gbar"></i></div><b id="gauge">0</b></div><div>残り<b id="left">6</b>手</div><button id="mute" title="読み上げ切替">🔊</button></header>
+ <div id="stage"><div id="bossface"></div><div id="bosssay" class="glass"></div></div>
+ <div id="log"></div>
+ <div id="callbar" class="glass"><span class="ct">コール</span></div>
+ <form id="form" class="glass"><button type="button" id="mic" title="音声入力">🎤</button><input id="msg" autocomplete="off" placeholder="ボスに話しかけよう（例：天地返しのコツ教えますよ）"><button class="send">食券を出す</button></form>
+</section>
+<section id="result" class="screen hidden glass center"><h1 id="rtitle"></h1><p id="rline" class="line"></p><div id="stats"></div><div id="reveal"></div><button id="again" class="big">もう一杯</button></section>
+<div id="pop" class="hidden"></div>
+<script src="app.js?v=6"></script></body></html>

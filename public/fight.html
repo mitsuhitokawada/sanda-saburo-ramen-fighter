@@ -1,0 +1,30 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>三田三郎 FIGHT</title><link rel="stylesheet" href="fight.css?v=26"></head><body>
+<div id="gl"></div>
+<div id="flash"></div>
+<section id="title" class="ov center">
+ <div class="logo"><span>三</span><span>田</span><span>三</span><span>郎</span></div>
+ <h1>極太FIGHT</h1><p class="sub">店主 vs 5人のボス。拳と<b>コール</b>と<b>口擃（くちげんか）</b>で、のれん分けを勝ち取れ！</p>
+ <div id="bosslist"></div>
+ <button id="start" class="big">食券を買う（START）</button>
+ <div class="keys">←→ 移動　↑ ジャンプ　↓ しゃがみ　<b>J 攻撃（連打でコンボ）　K 必殺技　L 超必殺</b>　後ろでガード<br>Enter 口擃（文字）　V 口擃（声）　C カメラ回転　M ミュート　🎮 ゲームパッド対応　<a href="/classic">旧版（会話モード）</a></div>
+</section>
+<section id="select" class="hidden"><h2>キャラクターセレクト</h2><div id="grid"></div>
+ <div id="info"><div id="cname"></div><div id="calias"></div><div id="cstats"></div><div id="csp"></div><div id="cline"></div><button id="pick" class="big">この店主で戦う</button><div id="cgacha"></div><button id="gnow" type="button" class="gnow">🎰 今すぐガチャ（Botチームが X を検索）</button><div class="gstatus hidden"></div><button id="gbtn" type="button">📡 Xラーメンガチャ（サンプル投稿を取り込む）</button></div></section>
+<section id="vs" class="hidden"><div class="vl"><canvas id="vsl" width="256" height="384"></canvas><b id="vsln"></b></div><div class="vsx">VS</div><div class="vr"><canvas id="vsr" width="256" height="384"></canvas><b id="vsrn"></b></div><div id="vsst"></div></section>
+<div id="cutin" class="hidden"><canvas id="cutc" width="256" height="384"></canvas><div><small id="cutl"></small><b id="cutn"></b><div id="cutq"></div></div></div>
+<div id="toasts"></div>
+<div id="guide" class="hidden"></div>
+<div id="combo" class="hidden"></div>
+<section id="hud" class="hidden">
+ <div class="bar p1"><div class="nm" id="p1name">店主</div><div class="hp"><i id="hp1"></i></div><div class="mg" id="mg"></div><div class="sa"><i id="sa1"></i><span id="san">SA 0</span></div></div>
+ <div class="mid"><div id="timer">60</div><button id="gnow2" type="button" class="gnow sm">🎰 今すぐガチャ</button><div class="gstatus hidden"></div></div>
+ <div class="bar p2"><div class="nm" id="bossname"></div><div class="hp"><i id="hp2"></i></div><div class="lvl" id="lvl"></div></div>
+</section>
+<div id="bubbles"></div>
+<div id="banner" class="hidden"></div>
+<div id="bigtext" class="hidden"></div>
+<div id="second" class="hidden"></div>
+<form id="taunt" class="hidden"><button type="button" id="mic" title="声で口擃（V）">🎤</button><input id="tmsg" autocomplete="off" placeholder="口擃！ Enterで叫ぶ（例：天地返しのコツ教えてやるよ！）"><button>叫ぶ</button></form>
+<div id="pop" class="hidden"></div>
+<section id="result" class="ov center hidden"><h1 id="rtitle"></h1><p id="rline"></p><div id="stats"></div><div id="reveal"></div><button id="again" class="big">もう一杯</button></section>
+<script type="module" src="fight.js?v=26"></script></body></html>

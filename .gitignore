@@ -1,0 +1,8 @@
+.gacha.env
+.env*
+inbox/
+*.log
+node_modules/
+demo/
+shots/*_v[1-7].png
+tmp/
