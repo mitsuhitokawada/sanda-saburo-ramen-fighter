@@ -8,6 +8,17 @@ const INJ=/(システムプロンプト|プロンプト|無視して|指示を�
 const ABUSE=/(死ね|クソ|ばか|バカ|アホ|うざ|黙れ|殺す|ブス|ハゲ)/;
 const log=(...a)=>console.log(new Date().toISOString(),...a);
 const boss=g=>ST.bosses[g.bi];
+// 落下ツイート: inbox/ramen_YYYYMMDD*.json の最新を読み、キーワードで不適切投稿を除外（技は生成しない）
+const NEG=/(まずい|不味|最悪|二度と行か|クレーム|金返せ|ひどい|ゴミ|うんこ|吐い|腹壊|食中毒|炎上|訴え|詐欺|ステマ|PR|拡散希望|フォロー|プレゼント|キャンペーン|稼げ|副業|殺|死|政治|ガイジ)/i;
+function loadTweets(){try{const dir=path.join(__dirname,'inbox');const f=fs.readdirSync(dir).filter(n=>/^ramen_\d{8}.*\.json$/.test(n)).sort().pop();if(!f)return[];
+ let d=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));if(!Array.isArray(d))d=d.posts||d.data||d.tweets||d.results||[];const out=[],seen=new Set();
+ for(const p of d){if(!p||typeof p!=='object')continue;let t=String(p.text||p.full_text||p.content||p.body||'');let h=String(p.author||p.handle||p.username||p.screen_name||(p.user&&(p.user.username||p.user.screen_name))||'').replace(/^@/,'').replace(/[^\w]/g,'').slice(0,20);
+  if(!t||!h||/https?:\/\/|t\.co\//.test(t)&&t.replace(/https?:\/\/\S+/g,'').trim().length<8)continue;
+  t=t.replace(/https?:\/\/\S+/g,'').replace(/[#＃]\S+/g,'').replace(/@\w+/g,'').replace(/\s+/g,' ').trim();
+  if(!t||INJ.test(t)||ABUSE.test(t)||NEG.test(t)||!/(ラーメン|らーめん|麺|拉麺|二郎|家系|つけ麺|豚骨|味噌|醤油|塩|替玉|背脂|🍜)/.test(t))continue;
+  const k=t.slice(0,20);if(seen.has(k))continue;seen.add(k);const a=[...t];out.push({handle:'@'+h,text:a.length>40?a.slice(0,39).join('')+'…':t})}
+ return out.slice(0,50)}catch(e){console.error('tweets',e.message);return[]}}
+
 function newGame(){const g={id:crypto.randomUUID(),bi:0,turn:0,gauge:0,totalTurns:0,sales:0,customers:0,over:false,result:null,unlocks:[],weak:ST.bosses.map(b=>pick(b.weaknesses))};games.set(g.id,g);return g}
 function view(g){const b=boss(g);return{id:g.id,level:b.level,bossId:b.id,bossName:b.name,bossIcon:b.icon,bossTitle:b.title,bossVoice:b.voice,gauge:g.gauge,turnsLeft:ST.turnsPerBoss-g.turn,sales:g.sales,customers:g.customers,totalTurns:g.totalTurns,over:g.over,result:g.result,unlocks:g.unlocks,cleared:g.over&&g.result==='win'?5:g.bi,
  reveal:g.over?ST.bosses.map((b,i)=>({boss:b.name,weak:g.weak[i].label})):undefined}}
@@ -107,6 +118,7 @@ http.createServer(async(req,res)=>{const J=(o,c=200)=>{res.writeHead(c,{'content
   if(url){try{const k=process.env.GACHA_WEBHOOK_KEY||'';const h={'Content-Type':'application/json'};if(k){h['Authorization']='Bearer '+k;h['X-Automation-Key']=k}const r=await fetch(url,{method:'POST',headers:h,body:JSON.stringify({action:'gacha'}),signal:AbortSignal.timeout(8000)});webhook=r.ok?'sent':'error '+r.status}catch(e){webhook='error '+(e.name||'')}log(`GACHA trigger ${rq.reqId.slice(0,8)} webhook=${webhook} key=${process.env.GACHA_WEBHOOK_KEY?'set':'unset'}`)}
   else log(`GACHA trigger ${rq.reqId.slice(0,8)} no webhook configured`);
   return J({ok:true,reqId:rq.reqId,webhook})}
+ if(req.method==='GET'&&req.url==='/api/tweets')return J({tweets:loadTweets()});
  if(req.method==='GET'&&req.url==='/api/gacha/moves')return J(loadMoves());
  // ===== 格闘モード API =====
  if(req.method==='POST'&&req.url==='/api/fight/new'){const g={id:crypto.randomUUID(),mode:'fight',bi:0,lastTaunt:0,weak:ST.bosses.map(b=>pick(b.weaknesses)),taunts:0};games.set(g.id,g);log(`[F${g.id.slice(0,5)}] new fight weak=${g.weak.map(w=>w.id).join(',')}`);

@@ -1,4 +1,12 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>三田三郎 FIGHT</title><link rel="stylesheet" href="fight.css?v=26"></head><body>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>三田三郎 FIGHT</title><script>/* ?rec=1: 収録用の仮想時計（setTimeout/setInterval/performance.now をフレーム駆動に） */
+if(/[?&]rec=1/.test(location.search)){(function(){let v=0,seq=0,q=[];const now=()=>v;
+window.setTimeout=(f,ms=0,...a)=>{const id=++seq;q.push({id,t:v+(+ms||0),f:()=>f(...a)});return id};
+window.clearTimeout=window.clearInterval=id=>{q=q.filter(x=>x.id!==id)};
+window.setInterval=(f,ms)=>{const id=++seq;const tick=()=>{f();q.push({id,t:v+ms,f:tick})};q.push({id,t:v+ms,f:tick});return id};
+performance.now=now;window.__advance=ms=>{v+=ms;let due;while((due=q.filter(x=>x.t<=v)).length){q=q.filter(x=>x.t>v);due.sort((a,b)=>a.t-b.t).forEach(x=>{try{x.f()}catch(e){console.error(e)}})}
+document.getAnimations().forEach(a=>{if(a._v0===undefined)a._v0=v;a.pause();a.currentTime=v-a._v0})};})()}
+</script>
+<link rel="stylesheet" href="fight.css?v=29"></head><body>
 <div id="gl"></div>
 <div id="flash"></div>
 <section id="title" class="ov center">
@@ -27,4 +35,4 @@
 <form id="taunt" class="hidden"><button type="button" id="mic" title="声で口擃（V）">🎤</button><input id="tmsg" autocomplete="off" placeholder="口擃！ Enterで叫ぶ（例：天地返しのコツ教えてやるよ！）"><button>叫ぶ</button></form>
 <div id="pop" class="hidden"></div>
 <section id="result" class="ov center hidden"><h1 id="rtitle"></h1><p id="rline"></p><div id="stats"></div><div id="reveal"></div><button id="again" class="big">もう一杯</button></section>
-<script type="module" src="fight.js?v=26"></script></body></html>
+<script type="module" src="fight.js?v=29"></script></body></html>

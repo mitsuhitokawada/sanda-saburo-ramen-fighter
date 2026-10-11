@@ -63,3 +63,11 @@ body.demo *{animation-duration:0s!important;animation-delay:0s!important;transit
 #cutin.gacha{height:40%;top:24%}#cutin.gacha b{font-size:clamp(46px,4vw,80px)}
 #cgacha .gm{margin:4px 0}#cgacha .qcard{max-width:100%;padding:6px 10px}
 #info{max-height:calc(100vh - 120px);overflow:auto}#cgacha .qt{font-size:clamp(15px,1vw,19px)}
+
+/* 落下ツイート：HUDより下・左右の外側レーンのみ（顔/HPバーを避ける） */
+#tweets{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#tweets .tw{position:absolute;top:18vh;width:min(22vw,340px);padding:10px 14px;border-radius:12px;background:rgba(15,20,30,.55);border:1px solid rgba(255,255,255,.25);color:#fff;font:600 clamp(13px,1.05vw,19px)/1.4 system-ui,sans-serif;text-shadow:0 1px 2px #000;backdrop-filter:blur(2px);animation:twfall 9s linear forwards}
+#tweets .tw.l{left:1.5vw}#tweets .tw.r{right:1.5vw}
+#tweets .tw b{display:block;color:#7cc8ff;font-size:.85em;margin-bottom:2px}
+#tweets .tw b::before{content:"𝕏 ";color:#fff}
+@keyframes twfall{0%{transform:translateY(0);opacity:0}8%{opacity:.85}85%{opacity:.85}100%{transform:translateY(34vh);opacity:0}}

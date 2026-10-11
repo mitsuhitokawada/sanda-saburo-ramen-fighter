@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 const $=s=>document.querySelector(s);
-const Q=new URLSearchParams(location.search),DEMO=Q.get('demo');if(DEMO)document.body.classList.add('demo');
+const Q=new URLSearchParams(location.search),DEMO=Q.get('demo'),REC=Q.get('rec')==='1';if(DEMO)document.body.classList.add('demo');
 let INIT=null,muted=!!DEMO,AC=null;
 // ================= 音 =================
 function tone(f,t,d,type='square',v=.08,f2){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;const s=AC.currentTime+t;if(f2)o.frequency.exponentialRampToValueAtTime(f2,s+d);g.gain.value=v;o.connect(g).connect(AC.destination);o.start(s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.stop(s+d)}catch(e){}}
@@ -200,7 +200,7 @@ function camUpdate(dt){const t=G.t||0;if(G.phase==='select'){camera.position.set
  if(G.orbit){G.orbitA+=dt*.6;const r=15;camera.position.set(G.camX+Math.sin(G.orbitA)*r,4.5+Math.sin(G.orbitA*.5),Math.cos(G.orbitA)*r)}else camera.position.set(G.camX+Math.sin(t*.4)*.35+(Math.random()-.5)*sh*.6,3.4+Math.sin(t*.3)*.12+(Math.random()-.5)*sh*.6,15.5);
  camera.lookAt(G.camX,1.9,0);if(G.me){const q=Math.atan2(camera.position.x-G.camX,camera.position.z);[G.me,G.boss].forEach(f=>f.g.rotation.y=q)}postMat.uniforms.focus.value=.42;postMat.uniforms.band.value=.16}
 function bubbles(dt){document.querySelectorAll('.bub').forEach(e=>{e._t-=dt;if(e._t<=0)return e.remove();const f=e._f;const v=new THREE.Vector3(f.x,f.y+3.9,0).project(camera);e.style.left=Math.max(14,Math.min(86,(v.x+1)*50))+'%';e.style.top=((1-v.y)*50)+'%'})}
-let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;if(!DEMO){step(dt);if(G.phase==='select')selStep(dt)}camUpdate(DEMO?0:dt);bubbles(DEMO?0:dt);render();requestAnimationFrame(loop)}
+let last=performance.now();function loop(now){const dt=Math.min(.1,(now-last)/1000);last=now;if(!DEMO){step(dt);if(G.phase==='select')selStep(dt)}camUpdate(DEMO?0:dt);bubbles(DEMO?0:dt);render();requestAnimationFrame(loop)}
 
 // ================= キャラクターセレクト（3Dボクセル） =================
 let sel=null;
@@ -274,7 +274,8 @@ $('#start').onclick=()=>{sfx.select();openSelect()};$('#again').onclick=()=>loca
 // ================= 起動 =================
 (async()=>{await loadAssets();INIT=await post('/api/fight/new');$('#bosslist').innerHTML=INIT.bosses.map(b=>`<div>Lv${b.level} ${b.icon} ${b.name}</div>`).join('');
  scene=new THREE.Scene();scene.add(buildStage('shop'));camera.position.set(0,3.4,15.5);camera.lookAt(0,1.9,0);
- if(DEMO)await demo();requestAnimationFrame(loop)})();
+ if(DEMO)await demo();if(!REC)requestAnimationFrame(loop);else render()})();
+window.__frame=dt=>{window.__advance(dt*1000);step(dt);if(G.phase==='select')selStep(dt);camUpdate(dt);bubbles(dt);render()};
 // ---- スクショ用デモ（決定論的に数フレーム進めて静止） ----
 async function demo(){const b=+(Q.get('b')||0);const run=(s)=>{for(let i=0;i<s*60;i++)step(1/60)};
  if(DEMO==='title'){steams.length&&run(1);return}
@@ -318,4 +319,14 @@ async function pollGacha(){try{const L=(await (await fetch('/api/gacha/moves')).
  if(G.phase==='fight'&&mine.length){G.me.cfg.gacha=[...(G.me.cfg.gacha||[]),...mine];gachaInterrupt(mine.at(-1));toast(`✨ K で使える新技：「${esc(mine.at(-1).name)}」`)}
  else if(G.phase==='select'){mine.forEach(m=>toast(`✨ 新技解放！「${m.name}」<small>由来: @${m.source.author} のポスト</small>`));if(sel)selShow(sel.i)}}catch(e){}}
 setInterval(pollGacha,5000);pollGacha();
-window.__dbg={G,gachaInterrupt,myGacha,press,toast,esc,get GACHA(){return GACHA}};
+window.__dbg={G,gachaInterrupt,myGacha,press,toast,esc,bubble,banner,sparks,hud,second,get GACHA(){return GACHA}};
+
+// ── 落下ツイート（背景演出のみ。技は増えない）──
+(()=>{const lay=document.createElement('div');lay.id='tweets';document.body.appendChild(lay);let pool=[],next=4,side=0;
+ const load=()=>fetch('/api/tweets').then(r=>r.json()).then(d=>{pool=d.tweets||[]}).catch(()=>{});load();setInterval(load,60000);
+ let last=performance.now();const tick=()=>{const now=performance.now(),dt=Math.min(.5,(now-last)/1000);last=now;
+  const on=G.phase==='fight';lay.style.display=on?'':'none';
+  if(on&&pool.length&&(next-=dt)<=0){next=6+Math.random()*4;if(lay.children.length<2){const t=pool[Math.random()*pool.length|0];
+   const c=document.createElement('div');c.className='tw '+((side^=1)?'l':'r');c.innerHTML=`<b>${esc(t.handle)}</b><span>${esc(t.text)}</span>`;
+   c.style.animationDuration='9s';c.addEventListener('animationend',()=>c.remove());lay.appendChild(c)}}
+ };setInterval(tick,250);window.__tweets={lay,get pool(){return pool},spawn(){next=0}}})();

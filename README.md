@@ -14,4 +14,8 @@ LLM_PROVIDER=xai XAI_API_KEY=... node server.js  # 本物のLLMで口撃判定
 - X監視Bot: Xのラーメン系ポストを5分おきに収集
 - 技師Bot: ポストから新技を生成
 - 審判Bot: 荒らし・強すぎる技を弾いて `/api/gacha/ingest` に投入
+- 対戦中、その日のラーメンのつぶやきが背景に降ってくる
 - 「今すぐガチャ」ボタン → Webhook でBotチームを起動、数十秒で対戦中に新技が降ってくる
+
+## デモ動画
+https://youtu.be/0TzF4r0DIY8
