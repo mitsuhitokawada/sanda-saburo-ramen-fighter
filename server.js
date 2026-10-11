@@ -107,16 +107,16 @@ function ingest(posts){const db=loadMoves(),added=[],rejected=[];const roster=FI
  log(`GACHA ingest posts=${(posts||[]).length} added=${added.length} rejected=${rejected.length} ${added.filter(m=>m.char==='tenshu').map(m=>`[${m.name} pow=${m.dmg} 由来@${m.source.author}]`).join(' ')} ${rejected.map(r=>`REJECT@${r.author||r.id}:${r.reason}`).join(' ')}`);
  return{added,rejected,total:db.moves.length}}
 
-// ---- xAI TTS（動的セリフ用）: 120字上限・ディスクキャッシュ・レート制限 ----
-const VLIB=require('./lib/voice');const TTSV=FIGHT_TTS();function FIGHT_TTS(){return require('./stages.js').fight.tts.voices}
+// ---- TTS（動的セリフ用, TTS_PROVIDER=gemini|xai）: 120字上限・ディスクキャッシュ・レート制限 ----
+const VLIB=require('./lib/voice');const TTSV=FIGHT_TTS();function FIGHT_TTS(){return require('./stages.js').fight.tts.speakers}
 const TTS_DIR=path.join(__dirname,'data','tts_cache');let ttsMan={};try{ttsMan=JSON.parse(fs.readFileSync(path.join(__dirname,'public/assets/voice/manifest.json'),'utf8'))}catch{}
 const ttsHits=new Map();let ttsChars=0;
 async function ttsFor(charId,text,ip){const v=TTSV[charId];if(!v)return{err:'unknown charId',code:400};const t=[...VLIB.norm(text)].slice(0,120).join('');if(!t)return{err:'empty',code:400};
  const pre=ttsMan[charId]&&ttsMan[charId][t];if(pre)return{file:path.join(__dirname,'public/assets/voice',pre),src:'pre'};
  const f=path.join(TTS_DIR,VLIB.key(v,t)+'.mp3');if(fs.existsSync(f))return{file:f,src:'cache'};
  const now=Date.now(),h=(ttsHits.get(ip)||[]).filter(x=>now-x<60000);if(h.length>=12)return{err:'rate limited',code:429};h.push(now);ttsHits.set(ip,h);
- if(PROVIDER==='mock'||!process.env.XAI_API_KEY)return{err:'tts unavailable',code:503};
- const t0=Date.now();const b=await VLIB.tts(v,t);fs.mkdirSync(TTS_DIR,{recursive:true});fs.writeFileSync(f,b);ttsChars+=[...t].length;log(`TTS ${charId}/${v} ${[...t].length}字 ${Date.now()-t0}ms total=${ttsChars}字`);return{file:f,src:'api'}}
+ if(PROVIDER==='mock'||!(process.env.GEMINI_API_KEY||process.env.XAI_API_KEY))return{err:'tts unavailable',code:503};
+ const t0=Date.now();const r=await VLIB.tts(v,t);const f2=r.prov===VLIB.PROV()?f:path.join(TTS_DIR,VLIB.key(v,t,r.prov)+'.mp3');fs.mkdirSync(TTS_DIR,{recursive:true});fs.writeFileSync(f2,r.buf);ttsChars+=[...t].length;log(`TTS ${r.prov} ${charId} ${[...t].length}字 ${Date.now()-t0}ms total=${ttsChars}字`);return{file:f2,src:'api-'+r.prov}}
 const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.json':'application/json','.mp3':'audio/mpeg'};
 http.createServer(async(req,res)=>{const J=(o,c=200)=>{res.writeHead(c,{'content-type':'application/json; charset=utf-8'});res.end(JSON.stringify(o))};
  try{if(req.method==='POST'&&req.url==='/api/new'){const g=newGame();log(`[${g.id.slice(0,6)}] new game weak=${g.weak.map(w=>w.id).join(',')}`);return J({state:view(g),team:ST.team,calls:ST.calls,opening:boss(g).opening,hint:teamHint(g),winLine:ST.winLine,loseLine:ST.loseLine,bosses:ST.bosses.map(b=>({level:b.level,name:b.name,icon:b.icon}))})}

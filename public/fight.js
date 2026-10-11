@@ -7,7 +7,7 @@ function tone(f,t,d,type='square',v=.08,f2){try{AC=AC||new (window.AudioContext|
 const sfx={hit(){if(!muted){tone(180,0,.12,'square',.12,60)}},block(){if(!muted)tone(900,0,.06,'triangle',.08)},whiff(){if(!muted)tone(400,0,.08,'sine',.04,200)},ticket(){if(!muted){tone(1200,0,.07);tone(900,.09,.07)}},
  special(){if(!muted){tone(300,0,.4,'sawtooth',.08,1200);tone(600,.05,.3,'square',.05,1800)}},sa(){if(!muted)[262,330,392,523,659,784].forEach((f,i)=>tone(f,i*.07,.4,'sawtooth',.07))},ko(){if(!muted){tone(120,0,1.2,'sawtooth',.15,30)}},levelup(){if(!muted)[523,659,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.35,'triangle',.12))},select(){if(!muted)tone(700,0,.05,'square',.06)}};
 function ssSpeak(text,v){if(!window.speechSynthesis)return;const u=new SpeechSynthesisUtterance(text);u.lang='ja-JP';u.pitch=v?.pitch??1;u.rate=v?.rate??1;const jv=speechSynthesis.getVoices().find(x=>x.lang.startsWith('ja'));if(jv)u.voice=jv;speechSynthesis.speak(u)}
-// xAI TTS: 事前生成mp3（manifest）→ /api/tts（動的・サーバーキャッシュ）→ speechSynthesis の順。常に1本だけ再生（重ならない）
+// TTS（Gemini/xAI）: 事前生成mp3（manifest）→ /api/tts（動的・サーバーキャッシュ）→ speechSynthesis の順。常に1本だけ再生（重ならない）
 let VMAN={};fetch('/assets/voice/manifest.json').then(r=>r.ok?r.json():{}).then(m=>VMAN=m).catch(()=>{});
 const VA=new Audio();let vseq=0;const vnorm=t=>String(t||'').replace(/[（(].*?[)）]/g,'').replace(/\s+/g,' ').trim();
 window.__voice={speak:(...a)=>speak(...a),get man(){return VMAN},VA};
@@ -140,7 +140,7 @@ function damage(att,def,dmg,h,opts={}){if(def.ko)return;const guardOK=def.guardi
  dmg*=att.enrage>0?1.3:1;if(att.isBoss)dmg*=(att.cfg.dmg||1);def.hp-=dmg;if(att===G.me)G.total.dmg+=dmg;
  if(def.hp<=0){def.hp=0;KO(def)}}
 // ---- 必殺技・SA ----
-function special(f,sp,lvl=0){const isSA=lvl>0;const col=sp.color??0xffffff;sfx.special();if(f===G.me&&!DEMO||DEMO)banner((isSA?`SA${lvl} `:'')+sp.name+'！');speak(sp.name,f.cfg.voice,f.cfg.id);if(sp.source)toast('<small>📡 元のポスト</small>'+quoteCard(sp));
+function special(f,sp,lvl=0){const isSA=lvl>0;const col=sp.color??0xffffff;sfx.special();if(f===G.me&&!DEMO||DEMO)banner((isSA?`SA${lvl} `:'')+sp.name+'！');if(!isSA)speak(sp.name+'！',f.cfg.voice,f.cfg.id);if(sp.source)toast('<small>📡 元のポスト</small>'+quoteCard(sp));
  const tgt=f===G.me?G.boss:G.me,dmg=(sp.dmg||10)*(isSA?1.6+lvl*.7:1),dist=Math.abs(tgt.x-f.x);startAtk(f,{pose:isSA?'sa':'special',start:.15,act:.01,rec:.35,range:0,dmg:0,h:'high'});
  const o={col,big:isSA||sp.type==='throw',stun:isSA?1.1:.6};
  if(sp.type==='projectile'||isSA&&lvl===1){const m=fxBox(f.x+f.face*1.2,2.2,col,3,isSA?1.4:.8);m.material.opacity=1;const L=new THREE.PointLight(col,10,7);m.add(L);G.fx[G.fx.length-1]={m,life:3,max:3,proj:{v:f.face*(isSA?14:10),owner:f,dmg,o}};}
