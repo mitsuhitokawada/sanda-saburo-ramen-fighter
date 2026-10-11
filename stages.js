@@ -70,6 +70,7 @@ module.exports.fight={
   {key:'3',id:'abura',name:'アブラスプラッシュ',dmg:12,type:'splash',color:0xffe27a},
   {key:'4',id:'tenchi',name:'天地返し投げ',dmg:20,type:'throw',color:0xffffff},
   {key:'5',id:'men',name:'極太麺ムチ',dmg:15,type:'whip',color:0xf7d774}],
+ tts:{language:'ja',voices:{tenshu:'rex',deshi:'leo',banchou:'atlas',tuber:'eve',lotbreaker:'cosmo',butafarmer:'orion',youtuber:'lux',nyinvestor:'perseus',shisho:'zagan',shiire:'helios',sekkyaku:'celeste',joren:'castor',announcer:'zenith'}}, // xAI TTS voice_id 割り当て
  seconds:['shiire','sekkyaku'],
  bosses:{
   lotbreaker:{stage:'shop',hp:90,speed:3.2,aggro:.45,dmg:.8,colors:{skin:'#f1c27d',body:'#4aa3ff',accent:'#ff5ea8',hair:'#c8732a',pants:'#2a3d6b'},hat:'cap',move:'スマホ連写フラッシュ',moveColor:0xaee6ff},

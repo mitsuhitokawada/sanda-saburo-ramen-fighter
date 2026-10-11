@@ -106,7 +106,18 @@ function ingest(posts){const db=loadMoves(),added=[],rejected=[];const roster=FI
  fs.mkdirSync(path.dirname(MOVES_FILE),{recursive:true});fs.writeFileSync(MOVES_FILE,JSON.stringify(db,null,1));
  log(`GACHA ingest posts=${(posts||[]).length} added=${added.length} rejected=${rejected.length} ${added.filter(m=>m.char==='tenshu').map(m=>`[${m.name} pow=${m.dmg} 由来@${m.source.author}]`).join(' ')} ${rejected.map(r=>`REJECT@${r.author||r.id}:${r.reason}`).join(' ')}`);
  return{added,rejected,total:db.moves.length}}
-const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.json':'application/json'};
+
+// ---- xAI TTS（動的セリフ用）: 120字上限・ディスクキャッシュ・レート制限 ----
+const VLIB=require('./lib/voice');const TTSV=FIGHT_TTS();function FIGHT_TTS(){return require('./stages.js').fight.tts.voices}
+const TTS_DIR=path.join(__dirname,'data','tts_cache');let ttsMan={};try{ttsMan=JSON.parse(fs.readFileSync(path.join(__dirname,'public/assets/voice/manifest.json'),'utf8'))}catch{}
+const ttsHits=new Map();let ttsChars=0;
+async function ttsFor(charId,text,ip){const v=TTSV[charId];if(!v)return{err:'unknown charId',code:400};const t=[...VLIB.norm(text)].slice(0,120).join('');if(!t)return{err:'empty',code:400};
+ const pre=ttsMan[charId]&&ttsMan[charId][t];if(pre)return{file:path.join(__dirname,'public/assets/voice',pre),src:'pre'};
+ const f=path.join(TTS_DIR,VLIB.key(v,t)+'.mp3');if(fs.existsSync(f))return{file:f,src:'cache'};
+ const now=Date.now(),h=(ttsHits.get(ip)||[]).filter(x=>now-x<60000);if(h.length>=12)return{err:'rate limited',code:429};h.push(now);ttsHits.set(ip,h);
+ if(PROVIDER==='mock'||!process.env.XAI_API_KEY)return{err:'tts unavailable',code:503};
+ const t0=Date.now();const b=await VLIB.tts(v,t);fs.mkdirSync(TTS_DIR,{recursive:true});fs.writeFileSync(f,b);ttsChars+=[...t].length;log(`TTS ${charId}/${v} ${[...t].length}字 ${Date.now()-t0}ms total=${ttsChars}字`);return{file:f,src:'api'}}
+const MIME={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.json':'application/json','.mp3':'audio/mpeg'};
 http.createServer(async(req,res)=>{const J=(o,c=200)=>{res.writeHead(c,{'content-type':'application/json; charset=utf-8'});res.end(JSON.stringify(o))};
  try{if(req.method==='POST'&&req.url==='/api/new'){const g=newGame();log(`[${g.id.slice(0,6)}] new game weak=${g.weak.map(w=>w.id).join(',')}`);return J({state:view(g),team:ST.team,calls:ST.calls,opening:boss(g).opening,hint:teamHint(g),winLine:ST.winLine,loseLine:ST.loseLine,bosses:ST.bosses.map(b=>({level:b.level,name:b.name,icon:b.icon}))})}
  if(req.method==='POST'&&req.url==='/api/turn'){let s='';for await(const c of req)s+=c;const {id,message,call}=JSON.parse(s||'{}');const g=games.get(id);if(!g)return J({error:'ゲームが見つかりません'},404);if(g.over)return J({error:'ゲームは終了しています'},400);return J(await turn(g,message,call))}
@@ -118,6 +129,8 @@ http.createServer(async(req,res)=>{const J=(o,c=200)=>{res.writeHead(c,{'content
   if(url){try{const k=process.env.GACHA_WEBHOOK_KEY||'';const h={'Content-Type':'application/json'};if(k){h['Authorization']='Bearer '+k;h['X-Automation-Key']=k}const r=await fetch(url,{method:'POST',headers:h,body:JSON.stringify({action:'gacha'}),signal:AbortSignal.timeout(8000)});webhook=r.ok?'sent':'error '+r.status}catch(e){webhook='error '+(e.name||'')}log(`GACHA trigger ${rq.reqId.slice(0,8)} webhook=${webhook} key=${process.env.GACHA_WEBHOOK_KEY?'set':'unset'}`)}
   else log(`GACHA trigger ${rq.reqId.slice(0,8)} no webhook configured`);
   return J({ok:true,reqId:rq.reqId,webhook})}
+ if(req.method==='POST'&&req.url==='/api/tts'){let s='';for await(const c of req){s+=c;if(s.length>4000)break}let q={};try{q=JSON.parse(s||'{}')}catch{}
+  try{const r=await ttsFor(String(q.charId||''),q.text,req.socket.remoteAddress);if(r.err)return J({error:r.err},r.code);const d=fs.readFileSync(r.file);res.writeHead(200,{'content-type':'audio/mpeg','x-tts-source':r.src,'cache-control':'public, max-age=86400'});return res.end(d)}catch(e){log('TTS err',e.message);return J({error:'tts failed'},502)}}
  if(req.method==='GET'&&req.url==='/api/tweets')return J({tweets:loadTweets()});
  if(req.method==='GET'&&req.url==='/api/gacha/moves')return J(loadMoves());
  // ===== 格闘モード API =====

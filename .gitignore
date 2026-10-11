@@ -6,3 +6,4 @@ node_modules/
 demo/
 shots/*_v[1-7].png
 tmp/
+data/tts_cache/
